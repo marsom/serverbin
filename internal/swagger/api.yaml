@@ -1,0 +1,1396 @@
+openapi: "3.0.2"
+info:
+  title: ServerBin API
+  version: "0.1.0"
+  description: |
+    Simple REST api for testing behaviour of clients, proxies, kubernetes deployments...
+{{ $root := . }}
+servers:
+{{range .Paths }}
+  - url: {{ $root.BaseUrl }}{{ . }}
+{{end}}
+tags:
+  - name: Methods
+    description: "Test http methods. Supports non standard methods with 3 to 7 characters."
+  - name: Status
+    description: "Returns given status code."
+{{ if .Delay }}
+  - name: Delay
+    description: "Returns the response after a delay."
+{{ end }}
+{{ if .Slow }}
+  - name: Slow
+    description: "Returns the response slowly."
+{{ end }}
+{{ if .Cookie }}
+  - name: Cookies
+    description: "Cookies"
+{{ end }}
+{{ if .Redirect }}
+  - name: Redirects / URL
+    description: "Returns a redirect responses by a URL."
+  - name: Redirects / Absolute
+    description: "Returns a redirect responses by an absolute path."
+  - name: Redirects / Relative
+    description: "Returns a redirect responses by a relative path."
+{{ end }}
+components:
+  requestBodies:
+    DefaultBody:
+      required: false
+      content:
+        multipart/form-data:
+          schema:
+            type: object
+        application/x-www-form-urlencoded:
+          schema:
+            type: object
+        application/json:
+          schema:
+            type: object
+        text/plain:
+          schema:
+            type: string
+        application/octet-stream:
+          schema:
+            type: string
+            format: binary
+  responses:
+    Default:
+      description: information about headers, cookies,...
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Default'
+        text/plain:
+          schema:
+            type: string
+    BadRequest:
+      description: request is invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Default'
+        text/plain:
+          schema:
+            type: string
+    MethodNotAllowed:
+      description: given method is not allowed
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Default'
+        text/plain:
+          schema:
+            type: string
+    InternalServerError:
+      description: internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Default'
+        text/plain:
+          schema:
+            type: string
+    Empty:
+      description: "empty response"
+  schemas:
+    Multipart:
+      description: multipart
+      type: object
+      properties:
+        name:
+          description: multipart name
+          type: string
+        filename:
+          description: multipart filename if present
+          type: string
+        base64:
+          description: base64 encoded payload
+          type: string
+        json:
+          description: json payload if it's json
+          type: object
+    Multiparts:
+      description: multipart payload (multipart/form-data)
+      type: array
+      items:
+        $ref: '#/components/schemas/Multipart'
+    Form:
+      description: form url encoding via RFC1866 (application/x-www-form-urlencoded)
+      type: object
+      additionalProperties:
+        type: array
+        items:
+          type: string
+    Payload:
+      type: object
+      properties:
+        base64:
+          description: base64 encoded payload
+          type: string
+        json:
+          description: json payload if it's json
+          type: object
+    Origin:
+      type: object
+      properties:
+        remote-ip:
+          description: remote ip
+          type: string
+        client-ip:
+          description: remote ip, or if a X-Forwarded-Header/Forwarded header is present the correct client ip
+          type: string
+    Default:
+      type: object
+      properties:
+        errors:
+          description: Error messages
+          type: array
+          items:
+            type: string
+        headers:
+          description: key/value for each request header
+          type: object
+          additionalProperties:
+            type: array
+            items:
+              type: string
+        cookies:
+          type: array
+          description: key/value for each cookie
+          items:
+            type: string
+        multipart:
+          $ref: '#/components/schemas/Multiparts'
+        form:
+          $ref: '#/components/schemas/Form'
+        origin:
+          $ref: '#/components/schemas/Origin'
+        payload:
+          $ref: '#/components/schemas/Payload'
+      example:
+        errors:
+          - error message 1
+          - error message 2
+        headers:
+          Accept:
+            - "application/json"
+            - "application/xml"
+          Accept-Languagte:
+            - "en-US,en;q=0.5"
+        cookies:
+          - name: a
+            value: b
+          - name: b
+            value: c
+        multipart:
+          - name: username
+            base64: "YWJj"
+          - name: data
+            base64: eyJpZCI6MTAwfQ==
+            json:
+              id: 100
+        payload:
+          base64: eyJpZCI6IDF9
+          json:
+            id: 1
+paths:
+  /method/get:
+    get:
+      summary: Only GET requests allowed
+      tags:
+        - Methods
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+  /method/head:
+    head:
+      summary: Only HEAD requests allowed
+      tags:
+        - Methods
+      responses:
+        '200':
+          $ref: '#/components/responses/Empty'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+  /method/put:
+    put:
+      summary: Only PUT requests allowed
+      tags:
+        - Methods
+      requestBody:
+        $ref: '#/components/requestBodies/DefaultBody'
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+  /method/post:
+    post:
+      summary: Only POST requests allowed
+      tags:
+        - Methods
+      requestBody:
+        $ref: '#/components/requestBodies/DefaultBody'
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+  /method/delete:
+    delete:
+      summary: Only DELETE requests allowed
+      tags:
+        - Methods
+      requestBody:
+        $ref: '#/components/requestBodies/DefaultBody'
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+  /method/trace:
+    trace:
+      summary: Only TRACE requests allowed
+      tags:
+        - Methods
+      requestBody:
+        $ref: '#/components/requestBodies/DefaultBody'
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+  /method/options:
+    options:
+      summary: Only OPTIONS requests allowed
+      tags:
+        - Methods
+      requestBody:
+        $ref: '#/components/requestBodies/DefaultBody'
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+  /status/{code}:
+    delete:
+      summary: Returns given status code
+      tags:
+        - Status
+      parameters:
+        - in: path
+          name: code
+          schema:
+            type: integer
+          required: true
+          description: Status code to return. Must in in the range [200,299], [400,599]
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      summary: Returns given status code
+      tags:
+        - Status
+      parameters:
+        - in: path
+          name: code
+          schema:
+            type: integer
+          required: true
+          description: Status code to return. Must in in the range [200,299], [400,599]
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    head:
+      summary: Returns given status code
+      tags:
+        - Status
+      parameters:
+        - in: path
+          name: code
+          schema:
+            type: integer
+          required: true
+          description: Status code to return. Must in in the range [200,299], [400,599]
+      responses:
+        '200':
+          $ref: '#/components/responses/Empty'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: Returns given status code
+      tags:
+        - Status
+      parameters:
+        - in: path
+          name: code
+          schema:
+            type: integer
+          required: true
+          description: Status code to return. Must in in the range [200,299], [400,599]
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      summary: Returns given status code
+      tags:
+        - Status
+      parameters:
+        - in: path
+          name: code
+          schema:
+            type: integer
+          required: true
+          description: Status code to return. Must in in the range [200,299], [400,599]
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    trace:
+      summary: Returns given status code
+      tags:
+        - Status
+      parameters:
+        - in: path
+          name: code
+          schema:
+            type: integer
+          required: true
+          description: Status code to return. Must in in the range [200,299], [400,599]
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    options:
+      summary: Returns given status code
+      tags:
+        - Status
+      parameters:
+        - in: path
+          name: code
+          schema:
+            type: integer
+          required: true
+          description: Status code to return. Must in in the range [200,299], [400,599]
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+{{ if .Delay }}
+  /delay/{duration}:
+    delete:
+      summary: Returns the response after the given duration.
+      tags:
+        - Delay
+      parameters:
+        - in: path
+          name: duration
+          schema:
+            type: string
+          required: true
+          description: delay i.e., 3s, 3m, 1m30s. duration must be lower than {{ .Delay.MaxDuration }}
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      summary: Returns the response after the given duration.
+      tags:
+        - Delay
+      parameters:
+        - in: path
+          name: duration
+          schema:
+            type: string
+          required: true
+          description: delay i.e., 3s, 3m, 1m30s
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    head:
+      summary: Returns the response after the given duration.
+      tags:
+        - Delay
+      parameters:
+        - in: path
+          name: duration
+          schema:
+            type: string
+          required: true
+          description: delay i.e., 3s, 3m, 1m30s. duration must be lower than {{ .Delay.MaxDuration }}
+      responses:
+        '200':
+          $ref: '#/components/responses/Empty'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: Returns the response after the given duration.
+      tags:
+        - Delay
+      parameters:
+        - in: path
+          name: duration
+          schema:
+            type: string
+          required: true
+          description: delay i.e., 3s, 3m, 1m30s
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      summary: Returns the response after the given duration.
+      tags:
+        - Delay
+      parameters:
+        - in: path
+          name: duration
+          schema:
+            type: string
+          required: true
+          description: delay i.e., 3s, 3m, 1m30s. duration must be lower than {{ .Delay.MaxDuration }}
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    trace:
+      summary: Returns the response after the given duration.
+      tags:
+        - Delay
+      parameters:
+        - in: path
+          name: duration
+          schema:
+            type: string
+          required: true
+          description: delay i.e., 3s, 3m, 1m30s
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    options:
+      summary: Returns the response after the given duration.
+      tags:
+        - Delay
+      parameters:
+        - in: path
+          name: duration
+          schema:
+            type: string
+          required: true
+          description: delay i.e., 3s, 3m, 1m30s
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+{{ end }}
+{{ if .Slow }}
+  /slow/{duration}:
+    delete:
+      summary: Returns the response slowly over the given duration.
+      tags:
+        - Slow
+      parameters:
+        - in: path
+          name: duration
+          schema:
+            type: string
+          required: true
+          description: delay i.e., 3s, 3m, 1m30s. duration must be lower than {{ .Slow.MaxDuration }}
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      summary: Returns the response slowly over the given duration.
+      tags:
+        - Slow
+      parameters:
+        - in: path
+          name: duration
+          schema:
+            type: string
+          required: true
+          description: delay i.e., 3s, 3m, 1m30s. duration must be lower than {{ .Slow.MaxDuration }}
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    head:
+      summary: Returns the response slowly over the given duration.
+      tags:
+        - Slow
+      parameters:
+        - in: path
+          name: duration
+          schema:
+            type: string
+          required: true
+          description: delay i.e., 3s, 3m, 1m30s. duration must be lower than {{ .Slow.MaxDuration }}
+      responses:
+        '200':
+          $ref: '#/components/responses/Empty'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: Returns the response slowly over the given duration.
+      tags:
+        - Slow
+      parameters:
+        - in: path
+          name: duration
+          schema:
+            type: string
+          required: true
+          description: delay i.e., 3s, 3m, 1m30s. duration must be lower than {{ .Slow.MaxDuration }}
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      summary: Returns the response slowly over the given duration.
+      tags:
+        - Slow
+      parameters:
+        - in: path
+          name: duration
+          schema:
+            type: string
+          required: true
+          description: delay i.e., 3s, 3m, 1m30s. duration must be lower than {{ .Slow.MaxDuration }}
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    trace:
+      summary: Returns the response slowly over the given duration.
+      tags:
+        - Slow
+      parameters:
+        - in: path
+          name: duration
+          schema:
+            type: string
+          required: true
+          description: delay i.e., 3s, 3m, 1m30s. duration must be lower than {{ .Slow.MaxDuration }}
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    options:
+      summary: Returns the response slowly over the given duration.
+      tags:
+        - Slow
+      parameters:
+        - in: path
+          name: duration
+          schema:
+            type: string
+          required: true
+          description: delay i.e., 3s, 3m, 1m30s. duration must be lower than {{ .Slow.MaxDuration }}
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+{{ end }}
+{{ if .Redirect }}
+  /redirect/url/{n}:
+    delete:
+      summary: Location header will contain an URL
+      tags:
+        - Redirects / URL
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      summary: Location header will contain an URL
+      tags:
+        - Redirects / URL
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    head:
+      summary: Location header will contain an URL
+      tags:
+        - Redirects / URL
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Empty'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: Location header will contain an URL
+      tags:
+        - Redirects / URL
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      summary: Location header will contain an URL
+      tags:
+        - Redirects / URL
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    trace:
+      summary: Location header will contain an URL
+      tags:
+        - Redirects / URL
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    options:
+      summary: Location header will contain an URL
+      tags:
+        - Redirects / URL
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /redirect/absolute/{n}:
+    delete:
+      summary: Location header will contain an URL
+      tags:
+        - Redirects / Absolute
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      summary: Location header will contain an URL
+      tags:
+        - Redirects / Absolute
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    head:
+      summary: Location header will contain an URL
+      tags:
+        - Redirects / Absolute
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Empty'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: Location header will contain an URL
+      tags:
+        - Redirects / Absolute
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      summary: Location header will contain an URL
+      tags:
+        - Redirects / Absolute
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    trace:
+      summary: Location header will contain an URL
+      tags:
+        - Redirects / Absolute
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    options:
+      summary: Location header will contain an URL
+      tags:
+        - Redirects / Absolute
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  /redirect/relative/{n}:
+    delete:
+      summary: Redirect by a relative path.
+      tags:
+        - Redirects / Relative
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    get:
+      summary: Redirect by a relative path.
+      tags:
+        - Redirects / Relative
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    head:
+      summary: Redirect by a relative path.
+      tags:
+        - Redirects / Relative
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Empty'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: Redirect by a relative path.
+      tags:
+        - Redirects / Relative
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      summary: Redirect by a relative path.
+      tags:
+        - Redirects / Relative
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    trace:
+      summary: Redirect by a relative path.
+      tags:
+        - Redirects / Relative
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    options:
+      summary: Redirect by a relative path.
+      tags:
+        - Redirects / Relative
+      parameters:
+        - in: path
+          name: n
+          schema:
+            type: integer
+            minimum: 0
+            maximum: 20
+          required: true
+          description: number of redirects. number must be lower than 20
+        - in: query
+          name: code
+          schema:
+            type: integer
+            minimum: 300
+            maximum: 399
+            default: 302
+          description: used redirction code. code must be in 3xx range
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+{{ end }}
+{{ if .Cookie }}
+  /cookies:
+    get:
+      summary: Show cookies
+      tags:
+        - Cookies
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    put:
+      summary: Set cookies
+      tags:
+        - Cookies
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      summary: Delete cookies
+      tags:
+        - Cookies
+      responses:
+        '200':
+          $ref: '#/components/responses/Default'
+        '400':
+          $ref: '#/components/responses/BadRequest'
+        '405':
+          $ref: '#/components/responses/MethodNotAllowed'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+{{ end }}

@@ -1,0 +1,47 @@
+openapi: "3.0.2"
+info:
+  title: ServerBin Management API
+  version: "0.1.0"
+  description: |
+    Simple REST api for testing behaviour of clients, proxies, kubernetes deployments...
+{{ $root := . }}
+servers:
+  - url: {{ $root.ManagementBaseUrl }}
+tags:
+  - name: Management
+    description: "Metrics, live and readiness checks"
+components:
+  responses:
+    Empty:
+      description: "empty response"
+    Metrics:
+      description: "Prometheus metrics"
+      content:
+        text/plain:
+          schema:
+            type: string
+paths:
+  /-/metrics:
+    get:
+      summary: Prometheus metrics
+      tags:
+        - Management
+      responses:
+        '200':
+          $ref: '#/components/responses/Metrics'
+  /-/readiness:
+    get:
+      summary: Readiness check
+      tags:
+        - Management
+      responses:
+        '200':
+          $ref: '#/components/responses/Empty'
+  /-/liveness:
+    get:
+      summary: Liveness check
+      tags:
+        - Management
+      responses:
+        '200':
+          $ref: '#/components/responses/Empty'
