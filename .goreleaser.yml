@@ -14,7 +14,7 @@ builds:
       - arm64
     main: ./cmd/serverbin/main.go
 checksum:
-  name_template: 'checksums.txt'
+  name_template: '{{ .ProjectName }}-{{ .Version }}-checksums.txt'
 snapshot:
   name_template: "{{ .Tag }}-next"
 changelog:
@@ -23,9 +23,15 @@ changelog:
     exclude:
       - '^docs:'
       - '^test:'
+      - '^dev:'
+      - 'README.md'
+      - Merge pull request
+      - Merge branch
+
 dockers:
   - image_templates:
-      - "marsom/serverbin:{{ .Version }}-amd64"
+      - marsom/serverbin:{{ .Version }}-amd64
+      - ghcr.io/marsom/serverbin:{{ .Tag }}-amd64
     dockerfile: Dockerfile
     use_buildx: true
     build_flag_templates:
@@ -40,13 +46,14 @@ dockers:
       - --label=org.opencontainers.image.licenses=Apache-2.0
       - --platform=linux/amd64
   - image_templates:
-      - "marsom/serverbin:{{ .Version }}-arm64"
+      - marsom/serverbin:{{ .Version }}-arm64
+      - ghcr.io/marsom/serverbin:{{ .Tag }}-arm64
     dockerfile: Dockerfile
     use_buildx: true
     build_flag_templates:
       - --pull
       - --label=org.opencontainers.image.title={{ .ProjectName }}
-      - --label=org.opencontainers.image.description={{ .ProjectName }}
+      - --label=org.opencontainers.image.description=simple request and response service
       - --label=org.opencontainers.image.url={{ .GitURL }}
       - --label=org.opencontainers.image.source={{ .GitURL }}
       - --label=org.opencontainers.image.version={{ .Version }}
@@ -60,10 +67,18 @@ docker_manifests:
     image_templates:
       - marsom/serverbin:{{ .Version }}-amd64
       - marsom/serverbin:{{ .Version }}-arm64
+  - name_template: ghcr.io/marsom/serverbin:{{ .Version }}
+    image_templates:
+      - ghcr.io/marsom/serverbin:{{ .Version }}-amd64
+      - ghcr.io/marsom/serverbin:{{ .Version }}-arm64
   - name_template: marsom/serverbin:latest
     image_templates:
       - marsom/serverbin:{{ .Version }}-amd64
       - marsom/serverbin:{{ .Version }}-arm64
+  - name_template: ghcr.io/marsom/serverbin:latest
+    image_templates:
+      - ghcr.io/marsom/serverbin:{{ .Version }}-amd64
+      - ghcr.io/marsom/serverbin:{{ .Version }}-arm64
 archives:
   - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     replacements:
