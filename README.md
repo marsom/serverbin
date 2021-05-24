@@ -53,17 +53,18 @@ the desired location.
 ## Build
 
 Download and install the build requirements:
-* go 1.16+
-* goreleaser
-* golangci-lint
+* [go](https://golang.org/) 1.16+
+* [goreleaser](https://goreleaser.com/)
 
+Optional development tools:
+* [golangci-lint](https://golangci-lint.run/)
 
-Build the binaries
+Build binaries
 ```
 goreleaser build --snapshot --rm-dist
 ```
 
-Build the binaries and docker images
+Build binaries and docker images
 ```
 goreleaser release --snapshot --rm-dist
 ```
