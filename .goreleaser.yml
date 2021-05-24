@@ -14,7 +14,7 @@ builds:
       - arm64
     main: ./cmd/serverbin/main.go
 checksum:
-  name_template: '{{ .ProjectName }}-checksums.txt'
+  name_template: '{{ .ProjectName }}_checksums.txt'
 snapshot:
   name_template: "{{ .Tag }}-next"
 changelog:
@@ -24,10 +24,12 @@ changelog:
       - '^docs:'
       - '^test:'
       - '^dev:'
+      - '^ci:'
       - 'README.md'
       - Merge pull request
       - Merge branch
-
+release:
+  prerelease: auto
 dockers:
   - image_templates:
       - marsom/serverbin:{{ .Tag }}-amd64
@@ -68,14 +70,6 @@ docker_manifests:
       - marsom/serverbin:{{ .Tag }}-amd64
       - marsom/serverbin:{{ .Tag }}-arm64
   - name_template: ghcr.io/marsom/serverbin:{{ .Tag }}
-    image_templates:
-      - ghcr.io/marsom/serverbin:{{ .Tag }}-amd64
-      - ghcr.io/marsom/serverbin:{{ .Tag }}-arm64
-  - name_template: marsom/serverbin:latest
-    image_templates:
-      - marsom/serverbin:{{ .Tag }}-amd64
-      - marsom/serverbin:{{ .Tag }}-arm64
-  - name_template: ghcr.io/marsom/serverbin:latest
     image_templates:
       - ghcr.io/marsom/serverbin:{{ .Tag }}-amd64
       - ghcr.io/marsom/serverbin:{{ .Tag }}-arm64
