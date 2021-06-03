@@ -1,10 +1,11 @@
-name: release-post
+name: Manually release latest images
 
 on:
-  release:
-    types:
-      - prereleased
-      - released
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'latest tag'
+        required: true
 
 jobs:
   goreleaser:
@@ -12,11 +13,6 @@ jobs:
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
     steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-        with:
-          fetch-depth: 0
-
       - name: QEMU
         uses: docker/setup-qemu-action@v1
 
@@ -36,5 +32,14 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GH_PAT }}
 
-      - name: Test
-        run: echo GITHUB_REF ${GITHUB_REF}
+      - name: Push latest images
+        uses: akhilerm/tag-push-action@v1.0.0
+        with:
+          src: docker.io/marsom/serverbin:${{ github.event.inputs.tag }}"
+          dst: docker.io/marsom/serverbin:latest
+
+      - name: Push latest images
+        uses: akhilerm/tag-push-action@v1.0.0
+        with:
+          src: ghcr.io/marsom/serverbin:${{ github.event.inputs.tag }}"
+          dst: ghcr.io/marsom/serverbin:latest

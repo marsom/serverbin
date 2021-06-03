@@ -3,8 +3,10 @@ name: checks
 on:
   pull_request: {}
   push:
-    branches:
+    branches-ignore:
       - main
+    tags-ignore:
+      - v.*
 
 jobs:
   go-mod:
