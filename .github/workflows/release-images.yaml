@@ -8,7 +8,7 @@ on:
         required: true
 
 jobs:
-  goreleaser:
+  latest-images:
     runs-on: ubuntu-latest
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
@@ -35,11 +35,11 @@ jobs:
       - name: Push latest images
         uses: akhilerm/tag-push-action@v1.0.0
         with:
-          src: docker.io/marsom/serverbin:${{ github.event.inputs.tag }}"
+          src: docker.io/marsom/serverbin:${{ github.event.inputs.tag }}
           dst: docker.io/marsom/serverbin:latest
 
       - name: Push latest images
         uses: akhilerm/tag-push-action@v1.0.0
         with:
-          src: ghcr.io/marsom/serverbin:${{ github.event.inputs.tag }}"
+          src: ghcr.io/marsom/serverbin:${{ github.event.inputs.tag }}
           dst: ghcr.io/marsom/serverbin:latest
