@@ -1,4 +1,4 @@
-name: Release a taged version
+name: Release
 
 on:
   push:

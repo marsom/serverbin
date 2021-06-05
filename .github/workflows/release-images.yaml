@@ -1,10 +1,10 @@
-name: Manually release latest images
+name: Release latest images
 
 on:
   workflow_dispatch:
     inputs:
       tag:
-        description: 'latest tag'
+        description: 'Tag which will be used for latest image'
         required: true
 
 jobs:

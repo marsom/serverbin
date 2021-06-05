@@ -1,0 +1,6 @@
+FROM mcr.microsoft.com/windows/nanoserver:1903
+
+ENTRYPOINT ["/serverbin.exe"]
+CMD ["--help"]
+
+COPY serverbin.exe /serverbin.exe

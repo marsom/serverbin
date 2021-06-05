@@ -1,0 +1,86 @@
+project_name: serverbin
+before:
+  hooks:
+    - go mod download
+builds:
+  - env:
+      - CGO_ENABLED=0
+    goos:
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    main: ./cmd/serverbin/main.go
+checksum:
+  name_template: '{{ .ProjectName }}_checksums.txt'
+snapshot:
+  name_template: "{{ .Tag }}-next"
+changelog:
+  sort: asc
+  filters:
+    exclude:
+      - '^docs:'
+      - '^test:'
+      - '^dev:'
+      - '^ci:'
+      - 'README.md'
+      - Merge pull request
+      - Merge branch
+release:
+  prerelease: auto
+dockers:
+  - image_templates:
+      - marsom/serverbin:{{ .Tag }}-amd64
+      - ghcr.io/marsom/serverbin:{{ .Tag }}-amd64
+    dockerfile: Dockerfile
+    use_buildx: true
+    build_flag_templates:
+      - --pull
+      - --label=org.opencontainers.image.title={{ .ProjectName }}
+      - --label=org.opencontainers.image.description=simple request and response service
+      - --label=org.opencontainers.image.url={{ .GitURL }}
+      - --label=org.opencontainers.image.source={{ .GitURL }}
+      - --label=org.opencontainers.image.version=v{{ .Version }}
+      - --label=org.opencontainers.image.created={{ .Date }}
+      - --label=org.opencontainers.image.revision={{ .FullCommit }}
+      - --label=org.opencontainers.image.licenses=Apache-2.0
+      - --platform=linux/amd64
+  - image_templates:
+      - marsom/serverbin:{{ .Tag }}-arm64
+      - ghcr.io/marsom/serverbin:{{ .Tag }}-arm64
+    dockerfile: Dockerfile
+    use_buildx: true
+    build_flag_templates:
+      - --pull
+      - --label=org.opencontainers.image.title={{ .ProjectName }}
+      - --label=org.opencontainers.image.description=simple request and response service
+      - --label=org.opencontainers.image.url={{ .GitURL }}
+      - --label=org.opencontainers.image.source={{ .GitURL }}
+      - --label=org.opencontainers.image.version=v{{ .Version }}
+      - --label=org.opencontainers.image.created={{ .Date }}
+      - --label=org.opencontainers.image.revision={{ .FullCommit }}
+      - --label=org.opencontainers.image.licenses=Apache-2.0
+      - --platform=linux/arm64
+    goarch: arm64
+docker_manifests:
+  - name_template: marsom/serverbin:{{ .Tag }}
+    image_templates:
+      - marsom/serverbin:{{ .Tag }}-amd64
+      - marsom/serverbin:{{ .Tag }}-arm64
+  - name_template: ghcr.io/marsom/serverbin:{{ .Tag }}
+    image_templates:
+      - ghcr.io/marsom/serverbin:{{ .Tag }}-amd64
+      - ghcr.io/marsom/serverbin:{{ .Tag }}-arm64
+archives:
+  - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+    replacements:
+      darwin: Darwin
+      linux: Linux
+      windows: Windows
+      amd64: x86_64
+    format_overrides:
+      - goos: windows
+        format: zip
+    files:
+      - README.md
+      - LICENSE
