@@ -30,10 +30,10 @@ release:
   prerelease: auto
 dockers:
   - image_templates:
-      - marsom/serverbin:{{ .Tag }}-amd64
-      - ghcr.io/marsom/serverbin:{{ .Tag }}-amd64
+      - marsom/serverbin:{{ .Tag }}-windows-amd64
+      - ghcr.io/marsom/serverbin:{{ .Tag }}-windows-amd64
     dockerfile: Dockerfile.windows
-    use_buildx: false
+    use_buildx: true
     build_flag_templates:
       - --pull
       - --label=org.opencontainers.image.title={{ .ProjectName }}
@@ -44,8 +44,10 @@ dockers:
       - --label=org.opencontainers.image.created={{ .Date }}
       - --label=org.opencontainers.image.revision={{ .FullCommit }}
       - --label=org.opencontainers.image.licenses=Apache-2.0
+      - --platform=windows/amd64
+
 archives:
-  - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
+- name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     replacements:
       darwin: Darwin
       linux: Linux
