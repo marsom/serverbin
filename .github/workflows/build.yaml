@@ -20,6 +20,10 @@ jobs:
         with:
           go-version: 1.16.4
 
+      - name: Test
+        run: |
+          docker buildx ls
+
       - name: GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
