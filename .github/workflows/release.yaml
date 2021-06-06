@@ -23,7 +23,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v2
         with:
           version: v0.165.0
-          args: -f .goreleaser.windows2019.yml --snapshot --rm-dist
+          args: -f .goreleaser.windows2019.yml --rm-dist
   goreleaser-linux:
     runs-on: ubuntu-latest
     env:
@@ -98,7 +98,7 @@ jobs:
             TAG=${GITHUB_REF#refs/tags/v}
           fi
 
-          if [[ -z "$TAG" ]; then
+          if [[ -z "$TAG" ]]; then
             echo "tag was not found"
             exit 1
           if
