@@ -36,7 +36,7 @@ jobs:
       - name: Test
         if: ${{ always() }}
         run: |
-          dir /s dist
+          Get-ChildItem -Path . –Recurse
   goreleaser-linux:
     runs-on: ubuntu-latest
     env:
