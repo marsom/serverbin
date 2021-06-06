@@ -120,9 +120,6 @@ jobs:
 
       - name: Push docker manifest (docker.io)
         run: |
-          docker pull marsom/serverbin:${{ steps.prep.outputs.tag }}-linux-amd64
-          docker pull marsom/serverbin:${{ steps.prep.outputs.tag }}-linux-arm64
-          docker pull marsom/serverbin:${{ steps.prep.outputs.tag }}-windows-amd64
           docker manifest create \
             marsom/serverbin:${{ steps.prep.outputs.tag }} \
             --amend marsom/serverbin:${{ steps.prep.outputs.tag }}-linux-amd64 \
@@ -132,9 +129,6 @@ jobs:
 
       - name: Push docker manifest (ghcr.io)
         run: |
-          docker pull ghcr.io/marsom/serverbin:${{ steps.prep.outputs.tag }}-linux-amd64
-          docker pull ghcr.io/marsom/serverbin:${{ steps.prep.outputs.tag }}-linux-arm64
-          docker pull ghcr.io/marsom/serverbin:${{ steps.prep.outputs.tag }}-windows-amd64
           docker manifest create \
             ghcr.io/marsom/serverbin:${{ steps.prep.outputs.tag }} \
             --amend ghcr.io/marsom/serverbin:${{ steps.prep.outputs.tag }}-linux-amd64 \
