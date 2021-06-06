@@ -32,7 +32,7 @@ dockers:
   - image_templates:
       - marsom/serverbin:{{ .Tag }}-windows-amd64
       - ghcr.io/marsom/serverbin:{{ .Tag }}-windows-amd64
-    dockerfile: Dockerfile.windows
+    dockerfile: Dockerfile.windows-2019
     build_flag_templates:
       - --pull
       - --label=org.opencontainers.image.title={{ .ProjectName }}

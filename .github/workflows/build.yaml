@@ -31,7 +31,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v2
         with:
           version: v0.165.0
-          args: -f .goreleaser.windows.yml --snapshot --rm-dist
+          args: -f .goreleaser.windows-2019.yml --snapshot --rm-dist --debug
 
   goreleaser-linux:
     runs-on: ubuntu-latest
@@ -58,4 +58,4 @@ jobs:
         uses: goreleaser/goreleaser-action@v2
         with:
           version: v0.165.0
-          args: --snapshot --rm-dist --debug
+          args: --snapshot --rm-dist
