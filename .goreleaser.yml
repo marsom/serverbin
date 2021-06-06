@@ -29,11 +29,13 @@ changelog:
       - Merge pull request
       - Merge branch
 release:
-  prerelease: auto
+  disable: true
 dockers:
-  - image_templates:
-      - marsom/serverbin:{{ .Tag }}-amd64
-      - ghcr.io/marsom/serverbin:{{ .Tag }}-amd64
+  - goos: linux
+    goarch: amd64
+    image_templates:
+      - marsom/serverbin:{{ .Tag }}-linux-amd64
+      - ghcr.io/marsom/serverbin:{{ .Tag }}-linux-amd64
     dockerfile: Dockerfile
     use_buildx: true
     build_flag_templates:
@@ -47,9 +49,11 @@ dockers:
       - --label=org.opencontainers.image.revision={{ .FullCommit }}
       - --label=org.opencontainers.image.licenses=Apache-2.0
       - --platform=linux/amd64
-  - image_templates:
-      - marsom/serverbin:{{ .Tag }}-arm64
-      - ghcr.io/marsom/serverbin:{{ .Tag }}-arm64
+  - goos: linux
+    goarch: arm64
+    image_templates:
+      - marsom/serverbin:{{ .Tag }}-linux-arm64
+      - ghcr.io/marsom/serverbin:{{ .Tag }}-linux-arm64
     dockerfile: Dockerfile
     use_buildx: true
     build_flag_templates:
@@ -63,16 +67,6 @@ dockers:
       - --label=org.opencontainers.image.revision={{ .FullCommit }}
       - --label=org.opencontainers.image.licenses=Apache-2.0
       - --platform=linux/arm64
-    goarch: arm64
-docker_manifests:
-  - name_template: marsom/serverbin:{{ .Tag }}
-    image_templates:
-      - marsom/serverbin:{{ .Tag }}-amd64
-      - marsom/serverbin:{{ .Tag }}-arm64
-  - name_template: ghcr.io/marsom/serverbin:{{ .Tag }}
-    image_templates:
-      - ghcr.io/marsom/serverbin:{{ .Tag }}-amd64
-      - ghcr.io/marsom/serverbin:{{ .Tag }}-arm64
 archives:
   - name_template: '{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}{{ if .Arm }}v{{ .Arm }}{{ end }}'
     replacements:

@@ -6,7 +6,25 @@ on:
       - v*
 
 jobs:
-  goreleaser:
+  goreleaser-windows:
+    runs-on: windows-2019
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.5
+
+      - name: GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: v0.165.0
+          args: -f .goreleaser.windows2019.yml --snapshot --rm-dist
+  goreleaser-linux:
     runs-on: ubuntu-latest
     env:
       DOCKER_CLI_EXPERIMENTAL: "enabled"
@@ -47,3 +65,63 @@ jobs:
           args: --rm-dist
         env:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
+  docker-manifests:
+    runs-on: ubuntu-latest
+    steps:
+      - name: QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_PAT }}
+
+      - name: Get tag
+        id: prep
+        run: |
+          # If this is git tag, use the tag name as a docker tag
+          if [[ $GITHUB_REF == refs/tags/* ]]; then
+            TAG=${GITHUB_REF#refs/tags/v}
+          fi
+
+          if [[ -z "$TAG" ]; then
+            echo "tag was not found"
+            exit 1
+          if
+
+          echo ::set-output name=tag::v${TAG}
+
+      - name: Push docker manifest (docker.io)
+        run: |
+          docker pull marsom/serverbin:${{ steps.prep.outputs.tag }}-linux-amd64
+          docker pull marsom/serverbin:${{ steps.prep.outputs.tag }}-linux-arm64
+          docker pull marsom/serverbin:${{ steps.prep.outputs.tag }}-windows-amd64
+          docker manifest create \
+            marsom/serverbin:${{ steps.prep.outputs.tag }} \
+            --amend marsom/serverbin:${{ steps.prep.outputs.tag }}-linux-amd64 \
+            --amend marsom/serverbin:${{ steps.prep.outputs.tag }}-linux-arm64 \
+            --amend marsom/serverbin:${{ steps.prep.outputs.tag }}-windows-amd64
+          docker push marsom/serverbin:${{ steps.prep.outputs.tag }}
+
+      - name: Push docker manifest (ghcr.io)
+        run: |
+          docker pull ghcr.io/marsom/serverbin:${{ steps.prep.outputs.tag }}-linux-amd64
+          docker pull ghcr.io/marsom/serverbin:${{ steps.prep.outputs.tag }}-linux-arm64
+          docker pull ghcr.io/marsom/serverbin:${{ steps.prep.outputs.tag }}-windows-amd64
+          docker manifest create \
+            ghcr.io/marsom/serverbin:${{ steps.prep.outputs.tag }} \
+            --amend ghcr.io/marsom/serverbin:${{ steps.prep.outputs.tag }}-linux-amd64 \
+            --amend ghcr.io/marsom/serverbin:${{ steps.prep.outputs.tag }}-linux-arm64 \
+            --amend ghcr.io/marsom/serverbin:${{ steps.prep.outputs.tag }}-windows-amd64
+          docker push ghcr.io/marsom/serverbin:${{ steps.prep.outputs.tag }}
