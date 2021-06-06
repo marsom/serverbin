@@ -106,7 +106,6 @@ jobs:
       - name: Get tag
         id: prep
         run: |
-          # If this is git tag, use the tag name as a docker tag
           if [[ $GITHUB_REF == refs/tags/* ]]; then
             TAG=${GITHUB_REF#refs/tags/v}
           fi
@@ -125,7 +124,7 @@ jobs:
             --amend marsom/serverbin:${{ steps.prep.outputs.tag }}-linux-amd64 \
             --amend marsom/serverbin:${{ steps.prep.outputs.tag }}-linux-arm64 \
             --amend marsom/serverbin:${{ steps.prep.outputs.tag }}-windows-amd64
-          docker push marsom/serverbin:${{ steps.prep.outputs.tag }}
+          docker manifest push marsom/serverbin:${{ steps.prep.outputs.tag }}
 
       - name: Push docker manifest (ghcr.io)
         run: |
@@ -134,4 +133,4 @@ jobs:
             --amend ghcr.io/marsom/serverbin:${{ steps.prep.outputs.tag }}-linux-amd64 \
             --amend ghcr.io/marsom/serverbin:${{ steps.prep.outputs.tag }}-linux-arm64 \
             --amend ghcr.io/marsom/serverbin:${{ steps.prep.outputs.tag }}-windows-amd64
-          docker push ghcr.io/marsom/serverbin:${{ steps.prep.outputs.tag }}
+          docker manifest push ghcr.io/marsom/serverbin:${{ steps.prep.outputs.tag }}
