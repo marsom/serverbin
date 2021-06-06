@@ -9,7 +9,6 @@ builds:
       - windows
     goarch:
       - amd64
-      - arm64
     main: ./cmd/serverbin/main.go
 checksum:
   name_template: '{{ .ProjectName }}_checksums.txt'
@@ -32,7 +31,7 @@ dockers:
   - image_templates:
       - marsom/serverbin:{{ .Tag }}-windows-amd64
       - ghcr.io/marsom/serverbin:{{ .Tag }}-windows-amd64
-    dockerfile: Dockerfile.windows-2019
+    dockerfile: Dockerfile.windows2019
     build_flag_templates:
       - --pull
       - --label=org.opencontainers.image.title={{ .ProjectName }}
