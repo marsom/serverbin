@@ -31,8 +31,12 @@ jobs:
         uses: goreleaser/goreleaser-action@v2
         with:
           version: v0.165.0
-          args: -f .goreleaser.windows-2019.yml --snapshot --rm-dist --debug
+          args: -f .goreleaser.windows2019.yml --snapshot --rm-dist --debug
 
+      - name: Test
+        if: ${{ always() }}
+        run: |
+          dir /s dist
   goreleaser-linux:
     runs-on: ubuntu-latest
     env:
