@@ -67,6 +67,9 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GH_PAT }}
   docker-manifests:
     runs-on: ubuntu-latest
+    needs:
+      - goreleaser-linux
+      - goreleaser-windows
     steps:
       - name: QEMU
         uses: docker/setup-qemu-action@v1
