@@ -7,8 +7,6 @@ builds:
       - CGO_ENABLED=0
     goos:
       - linux
-      - windows
-      - darwin
     goarch:
       - amd64
       - arm64
@@ -29,7 +27,8 @@ changelog:
       - Merge pull request
       - Merge branch
 release:
-  disable: true
+  draft: true
+  prerelease: true
 dockers:
   - goos: linux
     goarch: amd64
