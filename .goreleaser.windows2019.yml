@@ -18,6 +18,7 @@ changelog:
   sort: asc
   filters:
     exclude:
+      - '^style:'
       - '^docs:'
       - '^test:'
       - '^dev:'
@@ -26,8 +27,7 @@ changelog:
       - Merge pull request
       - Merge branch
 release:
-  draft: true
-  prerelease: true
+  disabled: true
 dockers:
   - goos: windows
     goarch: amd64
