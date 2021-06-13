@@ -26,7 +26,8 @@ changelog:
       - Merge pull request
       - Merge branch
 release:
-  disable: true
+  draft: true
+  prerelease: true
 dockers:
   - goos: windows
     goarch: amd64
