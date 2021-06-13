@@ -68,3 +68,10 @@ Build binaries and docker images
 ```
 goreleaser release --snapshot --rm-dist
 ```
+
+## Release
+
+* Create and push a release candidate tag, i.e. v0.0.1-rc1
+* If all look good then create the tagged version, i.e. v0.0.1
+* Update 
+* Manually trigger the "Release latest images" github action with the 
