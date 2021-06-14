@@ -49,5 +49,5 @@ jobs:
       - name: GoReleaser
         uses: goreleaser/goreleaser-action@v2
         with:
-          version: v0.165.0
-          args: --snapshot --rm-dist
+          version: v0.169.0
+          args: release --snapshot --rm-dist

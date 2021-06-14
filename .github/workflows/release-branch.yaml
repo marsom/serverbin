@@ -1,0 +1,175 @@
+name: Release a branch version
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  goreleaser-windows:
+    runs-on: windows-2019
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: Golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.5
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_PAT }}
+
+      - name: GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: v0.169.0
+          args: release -f .goreleaser.windows2019.yml --snapshot --rm-dist
+
+      - name: Get the branch name
+        id: prep
+        run: |
+          if [[ $GITHUB_REF == refs/head/* ]]; then
+            BRANCH=${GITHUB_REF#refs/head/}
+          fi
+
+          if [[ -z "BRANCH" ]]; then
+            echo "branch was not found"
+            exit 1
+          fi
+
+          echo ::set-output name=branch::${BRANCH}
+
+  goreleaser-linux:
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_CLI_EXPERIMENTAL: "enabled"
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+
+      - name: QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Golang
+        uses: actions/setup-go@v2
+        with:
+          go-version: 1.16.5
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_PAT }}
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v2
+        with:
+          version: v0.169.0
+          args: release --snapshot --rm-dist
+
+      - name: Get the branch name
+        id: prep
+        run: |
+          if [[ $GITHUB_REF == refs/head/* ]]; then
+            BRANCH=${GITHUB_REF#refs/head/}
+          fi
+
+          if [[ -z "BRANCH" ]]; then
+            echo "branch was not found"
+            exit 1
+          fi
+
+          echo ::set-output name=branch::${BRANCH}
+
+      - name: Release a ci version of the docker images
+        run: |
+          docker tag marsom/serverbin:ci-linux-amd64 marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-amd64
+          docker tag marsom/serverbin:ci-linux-arm64 marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-arm64
+          docker tag ghcr.io/marsom/serverbin:ci-linux-amd64 ghcr.io/marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-amd64
+          docker tag ghcr.io/marsom/serverbin:ci-linux-arm64 ghcr.io/marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-arm64
+          docker push marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-amd64
+          docker push marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-arm64
+          docker push ghcr.io/marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-amd64
+          docker push ghcr.io/marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-arm64
+
+  docker-manifests:
+    runs-on: ubuntu-latest
+    needs:
+      - goreleaser-linux
+      - goreleaser-windows
+    steps:
+      - name: QEMU
+        uses: docker/setup-qemu-action@v1
+
+      - name: Docker Buildx
+        uses: docker/setup-buildx-action@v1
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v1
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Login to GitHub Container Registry
+        uses: docker/login-action@v1
+        with:
+          registry: ghcr.io
+          username: ${{ github.repository_owner }}
+          password: ${{ secrets.GH_PAT }}
+
+      - name: Get the branch name
+        id: prep
+        run: |
+          if [[ $GITHUB_REF == refs/head/* ]]; then
+            BRANCH=${GITHUB_REF#refs/head/}
+          fi
+
+          if [[ -z "BRANCH" ]]; then
+            echo "branch was not found"
+            exit 1
+          fi
+
+          echo ::set-output name=branch::${BRANCH}
+
+      - name: Push docker manifest (docker.io)
+        run: |
+          docker manifest create \
+            marsom/serverbin:${{ steps.prep.outputs.branch }} \
+            --amend marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-amd64 \
+            --amend marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-arm64 \
+            --amend marsom/serverbin:${{ steps.prep.outputs.branch }}-windows-amd64
+          docker manifest push marsom/serverbin:${{ steps.prep.outputs.branch }}
+
+      - name: Push docker manifest (ghcr.io)
+        run: |
+          docker manifest create \
+            ghcr.io/marsom/serverbin:${{ steps.prep.outputs.branch }} \
+            --amend ghcr.io/marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-amd64 \
+            --amend ghcr.io/marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-arm64 \
+            --amend ghcr.io/marsom/serverbin:${{ steps.prep.outputs.branch }}-windows-amd64
+          docker manifest push ghcr.io/marsom/serverbin:${{ steps.prep.outputs.branch }}

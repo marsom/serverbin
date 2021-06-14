@@ -71,7 +71,10 @@ goreleaser release --snapshot --rm-dist
 
 ## Release
 
-* Create and push a release candidate tag, i.e. v0.0.1-rc1
-* If all look good then create the tagged version, i.e. v0.0.1
-* Update 
+* Create and push a release candidate tag, i.e., v0.0.1-rc1
+* If all look good then create the tagged version, i.e., v0.0.1
+* Update release notes in github
+  * goreleaser generated docker images section contains architecture based images. this is not correct because we 
+    build a docker manifest in a separate step.
+  * remove prerelease flag
 * Manually trigger the "Release latest images" github action with the 
