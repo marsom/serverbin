@@ -113,7 +113,7 @@ jobs:
           fi
 
           if [[ -z "$TAG" ]]; then
-            echo "tag was not found"
+            echo "tag was not found from ${GITHUB_REF}"
             exit 1
           fi
 

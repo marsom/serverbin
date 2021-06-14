@@ -49,6 +49,7 @@ jobs:
             echo "branch was not found"
             exit 1
           fi
+          echo "found branch ${BRANCH} from ${GITHUB_REF}"
 
           echo ::set-output name=branch::${BRANCH}
 
@@ -99,11 +100,12 @@ jobs:
             BRANCH=${GITHUB_REF#refs/head/}
           fi
 
-          if [[ -z "BRANCH" ]]; then
-            echo "branch was not found"
+          if [[ -z "$BRANCH" ]]; then
+            echo "branch was not found from ${GITHUB_REF}"
             exit 1
           fi
 
+          echo "found branch ${BRANCH} from ${GITHUB_REF}"
           echo ::set-output name=branch::${BRANCH}
 
       - name: Release a ci version of the docker images
