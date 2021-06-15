@@ -32,8 +32,8 @@ dockers:
   - goos: windows
     goarch: amd64
     image_templates:
-      - marsom/serverbin:{{ .Tag }}-windows-amd64
-      - ghcr.io/marsom/serverbin:{{ .Tag }}-windows-amd64
+      - marsom/serverbin:{{ .Version }}-windows-amd64
+      - ghcr.io/marsom/serverbin:{{ .Version }}-windows-amd64
     dockerfile: Dockerfile.windows2019
     build_flag_templates:
       - --pull
