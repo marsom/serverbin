@@ -1,0 +1,48 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: serverbin-tcp
+  labels:
+    app.kubernetes.io/instance: serverbin-tcp
+    app.kubernetes.io/component: application
+    app: serverbin-tcp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: serverbin-tcp
+  template:
+    metadata:
+      labels:
+        app: serverbin-tcp
+    spec:
+      containers:
+        - name: serverbin
+          args:
+            - tcp
+          image: marsom/serverbin:latest
+          ports:
+            - containerPort: 8080
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - serverbin-tcp
+              topologyKey: "kubernetes.io/hostname"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: serverbin-tcp
+spec:
+  selector:
+    app: serverbin-tcp
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080

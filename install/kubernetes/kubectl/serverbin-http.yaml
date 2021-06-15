@@ -1,0 +1,51 @@
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: serverbin-http
+  labels:
+    app.kubernetes.io/instance: serverbin-http
+    app.kubernetes.io/component: application
+    app: serverbin-http
+spec:
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 1
+  selector:
+    matchLabels:
+      app: serverbin-http
+  template:
+    metadata:
+      labels:
+        app: serverbin-http
+    spec:
+      containers:
+        - name: serverbin
+          args:
+            - http
+          image: marsom/serverbin:latest
+          ports:
+            - containerPort: 8080
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: app
+                    operator: In
+                    values:
+                      - serverbin-http
+              topologyKey: "kubernetes.io/hostname"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: serverbin-http
+spec:
+  selector:
+    app: serverbin-http
+  ports:
+    - protocol: TCP
+      port: 8080
+      targetPort: 8080
