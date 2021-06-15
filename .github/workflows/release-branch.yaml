@@ -1,4 +1,4 @@
-name: Release a branch version
+name: Release a development version
 
 on:
   push:
@@ -38,20 +38,15 @@ jobs:
           version: v0.169.0
           args: release -f .goreleaser.windows2019.yml --snapshot --rm-dist
 
-      - name: Get the branch name
-        id: prep
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v3.x
+
+      - name: Release a ci version of the docker images (windows)
         run: |
-          if [[ $GITHUB_REF == refs/head/* ]]; then
-            BRANCH=${GITHUB_REF#refs/head/}
-          fi
-
-          if [[ -z "BRANCH" ]]; then
-            echo "branch was not found"
-            exit 1
-          fi
-          echo "found branch ${BRANCH} from ${GITHUB_REF}"
-
-          echo ::set-output name=branch::${BRANCH}
+          docker tag marsom/serverbin:ci-windows-amd64 marsom/serverbin:${GITHUB_REF_SLUG}-windows-amd64
+          docker tag ghcr.io/marsom/serverbin:ci-windows-amd64 ghcr.io/marsom/serverbin:${GITHUB_REF_SLUG}-windows-amd64
+          docker push marsom/serverbin:${GITHUB_REF_SLUG}-windows-amd64
+          docker push ghcr.io/marsom/serverbin:${GITHUB_REF_SLUG}-windows-amd64
 
   goreleaser-linux:
     runs-on: ubuntu-latest
@@ -93,31 +88,19 @@ jobs:
           version: v0.169.0
           args: release --snapshot --rm-dist
 
-      - name: Get the branch name
-        id: prep
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v3.x
+
+      - name: Release a ci version of the docker images (linux)
         run: |
-          if [[ $GITHUB_REF == refs/head/* ]]; then
-            BRANCH=${GITHUB_REF#refs/head/}
-          fi
-
-          if [[ -z "$BRANCH" ]]; then
-            echo "branch was not found from ${GITHUB_REF}"
-            exit 1
-          fi
-
-          echo "found branch ${BRANCH} from ${GITHUB_REF}"
-          echo ::set-output name=branch::${BRANCH}
-
-      - name: Release a ci version of the docker images
-        run: |
-          docker tag marsom/serverbin:ci-linux-amd64 marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-amd64
-          docker tag marsom/serverbin:ci-linux-arm64 marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-arm64
-          docker tag ghcr.io/marsom/serverbin:ci-linux-amd64 ghcr.io/marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-amd64
-          docker tag ghcr.io/marsom/serverbin:ci-linux-arm64 ghcr.io/marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-arm64
-          docker push marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-amd64
-          docker push marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-arm64
-          docker push ghcr.io/marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-amd64
-          docker push ghcr.io/marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-arm64
+          docker tag marsom/serverbin:ci-linux-amd64 marsom/serverbin:${GITHUB_REF_SLUG}-linux-amd64
+          docker tag marsom/serverbin:ci-linux-arm64 marsom/serverbin:${GITHUB_REF_SLUG}-linux-arm64
+          docker tag ghcr.io/marsom/serverbin:ci-linux-amd64 ghcr.io/marsom/serverbin:${GITHUB_REF_SLUG}-linux-amd64
+          docker tag ghcr.io/marsom/serverbin:ci-linux-arm64 ghcr.io/marsom/serverbin:${GITHUB_REF_SLUG}-linux-arm64
+          docker push marsom/serverbin:${GITHUB_REF_SLUG}-linux-amd64
+          docker push marsom/serverbin:${GITHUB_REF_SLUG}-linux-arm64
+          docker push ghcr.io/marsom/serverbin:${GITHUB_REF_SLUG}-linux-amd64
+          docker push ghcr.io/marsom/serverbin:${GITHUB_REF_SLUG}-linux-arm64
 
   docker-manifests:
     runs-on: ubuntu-latest
@@ -144,34 +127,23 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GH_PAT }}
 
-      - name: Get the branch name
-        id: prep
-        run: |
-          if [[ $GITHUB_REF == refs/head/* ]]; then
-            BRANCH=${GITHUB_REF#refs/head/}
-          fi
-
-          if [[ -z "BRANCH" ]]; then
-            echo "branch was not found"
-            exit 1
-          fi
-
-          echo ::set-output name=branch::${BRANCH}
+      - name: Inject slug/short variables
+        uses: rlespinasse/github-slug-action@v3.x
 
       - name: Push docker manifest (docker.io)
         run: |
           docker manifest create \
-            marsom/serverbin:${{ steps.prep.outputs.branch }} \
-            --amend marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-amd64 \
-            --amend marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-arm64 \
-            --amend marsom/serverbin:${{ steps.prep.outputs.branch }}-windows-amd64
-          docker manifest push marsom/serverbin:${{ steps.prep.outputs.branch }}
+            marsom/serverbin:${GITHUB_REF_SLUG} \
+            --amend marsom/serverbin:${GITHUB_REF_SLUG}-linux-amd64 \
+            --amend marsom/serverbin:${GITHUB_REF_SLUG}-linux-arm64 \
+            --amend marsom/serverbin:${GITHUB_REF_SLUG}-windows-amd64
+          docker manifest push marsom/serverbin:${GITHUB_REF_SLUG}
 
       - name: Push docker manifest (ghcr.io)
         run: |
           docker manifest create \
-            ghcr.io/marsom/serverbin:${{ steps.prep.outputs.branch }} \
-            --amend ghcr.io/marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-amd64 \
-            --amend ghcr.io/marsom/serverbin:${{ steps.prep.outputs.branch }}-linux-arm64 \
-            --amend ghcr.io/marsom/serverbin:${{ steps.prep.outputs.branch }}-windows-amd64
-          docker manifest push ghcr.io/marsom/serverbin:${{ steps.prep.outputs.branch }}
+            ghcr.io/marsom/serverbin:${GITHUB_REF_SLUG} \
+            --amend ghcr.io/marsom/serverbin:${GITHUB_REF_SLUG}-linux-amd64 \
+            --amend ghcr.io/marsom/serverbin:${GITHUB_REF_SLUG}-linux-arm64 \
+            --amend ghcr.io/marsom/serverbin:${GITHUB_REF_SLUG}-windows-amd64
+          docker manifest push ghcr.io/marsom/serverbin:${GITHUB_REF_SLUG}
