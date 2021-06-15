@@ -76,5 +76,5 @@ goreleaser release --snapshot --rm-dist
 * Update release notes in github
   * goreleaser generated docker images section contains architecture based images. this is not correct because we 
     build a docker manifest in a separate step.
-  * remove prerelease flag
+  * remove prerelease/draft flag
 * Manually trigger the "Release latest images" github action with the 

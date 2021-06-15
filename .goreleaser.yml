@@ -36,8 +36,8 @@ dockers:
   - goos: linux
     goarch: amd64
     image_templates:
-      - marsom/serverbin:{{ .Version }}-linux-amd64
-      - ghcr.io/marsom/serverbin:{{ .Version }}-linux-amd64
+      - marsom/serverbin:v{{ .Version }}-linux-amd64
+      - ghcr.io/marsom/serverbin:v{{ .Version }}-linux-amd64
     dockerfile: Dockerfile
     use_buildx: true
     build_flag_templates:
@@ -54,8 +54,8 @@ dockers:
   - goos: linux
     goarch: arm64
     image_templates:
-      - marsom/serverbin:{{ .Version }}-linux-arm64
-      - ghcr.io/marsom/serverbin:{{ .Version }}-linux-arm64
+      - marsom/serverbin:v{{ .Version }}-linux-arm64
+      - ghcr.io/marsom/serverbin:v{{ .Version }}-linux-arm64
     dockerfile: Dockerfile
     use_buildx: true
     build_flag_templates:
