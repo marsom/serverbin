@@ -3,8 +3,6 @@ name: Build pull requests
 on:
   pull_request: {}
   push:
-    branches:
-      - '*'
     branches-ignore:
       - main
 
