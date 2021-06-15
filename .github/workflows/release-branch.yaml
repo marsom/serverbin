@@ -43,10 +43,10 @@ jobs:
 
       - name: Release a ci version of the docker images (windows)
         run: |
-          docker tag marsom/serverbin:ci-windows-amd64 marsom/serverbin:${GITHUB_REF_SLUG}-windows-amd64
-          docker tag ghcr.io/marsom/serverbin:ci-windows-amd64 ghcr.io/marsom/serverbin:${GITHUB_REF_SLUG}-windows-amd64
-          docker push marsom/serverbin:${GITHUB_REF_SLUG}-windows-amd64
-          docker push ghcr.io/marsom/serverbin:${GITHUB_REF_SLUG}-windows-amd64
+          docker tag marsom/serverbin:ci-windows-amd64 marsom/serverbin:$GITHUB_REF_SLUG-windows-amd64
+          docker tag ghcr.io/marsom/serverbin:ci-windows-amd64 ghcr.io/marsom/serverbin:$GITHUB_REF_SLUG-windows-amd64
+          docker push marsom/serverbin:$GITHUB_REF_SLUG-windows-amd64
+          docker push ghcr.io/marsom/serverbin:$GITHUB_REF_SLUG-windows-amd64
 
   goreleaser-linux:
     runs-on: ubuntu-latest
