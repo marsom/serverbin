@@ -33,13 +33,13 @@ jobs:
           password: ${{ secrets.GH_PAT }}
 
       - name: Push latest images (docker.io)
-        uses: akhilerm/tag-push-action@v1.0.0
+        uses: akhilerm/tag-push-action@v1.1.0
         with:
           src: docker.io/marsom/serverbin:${{ github.event.inputs.tag }}
           dst: docker.io/marsom/serverbin:latest
 
       - name: Push latest images (ghcr.io)
-        uses: akhilerm/tag-push-action@v1.0.0
+        uses: akhilerm/tag-push-action@v1.1.0
         with:
           src: ghcr.io/marsom/serverbin:${{ github.event.inputs.tag }}
           dst: ghcr.io/marsom/serverbin:latest
